@@ -5,5 +5,5 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class CreateClientDto extends CreateUserDTO {
+public class CreateClientDto extends CreateUserDto {
 }

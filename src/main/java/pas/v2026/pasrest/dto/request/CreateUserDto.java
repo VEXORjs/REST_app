@@ -13,7 +13,7 @@ import lombok.Data;
         @JsonSubTypes.Type(value = CreateAdminDto.class, name = "ADMIN"),
         @JsonSubTypes.Type(value = CreateResourceManagerDto.class, name = "RESOURCE_MANAGER")
 })
-public abstract class CreateUserDTO {
+public abstract class CreateUserDto {
     @NotBlank(message = "Login nie może być pusty")
     @Size(min = 3, max = 50, message = "Login musi mieć od 3 do 50 znaków")
     private String login;
