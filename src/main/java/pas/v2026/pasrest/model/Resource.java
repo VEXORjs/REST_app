@@ -32,5 +32,5 @@ public abstract class Resource {
     @Builder.Default
     private boolean available = true;
 
-    private UUID ownerID;
+    private UUID ownerId;
 }

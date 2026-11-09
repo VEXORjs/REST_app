@@ -26,5 +26,5 @@ public abstract class ResourceResponseDto {
     private String description;
     private BigDecimal price;
     private boolean available = true;
-    private UUID ownerID;
+    private UUID ownerId;
 }
