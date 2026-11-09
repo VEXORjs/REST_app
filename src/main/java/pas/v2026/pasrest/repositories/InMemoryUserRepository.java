@@ -1,5 +1,6 @@
 package pas.v2026.pasrest.repositories;
 
+
 import pas.v2026.pasrest.exceptions.LoginAlreadyInUseException;
 import pas.v2026.pasrest.model.User;
 import org.springframework.stereotype.Repository;
@@ -18,11 +19,14 @@ public class InMemoryUserRepository implements UserRepository {
 
     @Override
     public synchronized User save(User user) {
-        findByLoginExact(user.getLogin())
-                .filter(existing -> !existing.getId().equals(user.getId()))
-                .ifPresent(ignored -> {
-                    throw new LoginAlreadyInUseException(user.getLogin());
-                });
+        if(user.getId() == null) {
+            user.setId(UUID.randomUUID());
+        }
+
+        Optional<User> existingUser = findByLoginExact(user.getLogin());
+        if (existingUser.isPresent() && !existingUser.get().getId().equals(user.getId())) {
+            throw new LoginAlreadyInUseException(user.getLogin());
+        }
 
         users.put(user.getId(), user);
         return user;
