@@ -6,4 +6,5 @@ public class AllocationNotFoundException extends NotFoundException {
     public AllocationNotFoundException(UUID id) {
       super(String.format("Alokacja o identyfikatorze %s nie została znaleziona", id));
     }
+
 }

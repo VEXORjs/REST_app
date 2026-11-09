@@ -8,4 +8,8 @@ public class InvalidDateRangeException extends BusinessException {
     public InvalidDateRangeException() {
         super("Nieprawidłowy przedział czasu. Czas zakończenia musi być po czasie rozpoczęcia.");
     }
+
+    public InvalidDateRangeException(String message) {
+        super(message);
+    }
 }
