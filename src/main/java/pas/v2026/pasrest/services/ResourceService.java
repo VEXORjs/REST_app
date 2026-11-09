@@ -39,7 +39,7 @@ public class ResourceService {
         return resourceRepository.findByNamePartial(namePart);
     }
 
-    public List<Resource> getResourceByAvailable(boolean available) {
+    public List<Resource> getResourcesByAvailable(boolean available) {
         return resourceRepository.findByAvailable(available);
     }
 
