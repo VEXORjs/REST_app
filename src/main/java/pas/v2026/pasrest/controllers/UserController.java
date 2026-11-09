@@ -5,10 +5,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pas.v2026.pasrest.dto.request.CreateAdminDto;
-import pas.v2026.pasrest.dto.request.CreateClientDto;
-import pas.v2026.pasrest.dto.request.CreateResourceManagerDto;
-import pas.v2026.pasrest.dto.request.CreateUserDto;
+import pas.v2026.pasrest.dto.request.*;
 import pas.v2026.pasrest.dto.response.AdminResponseDto;
 import pas.v2026.pasrest.dto.response.ClientResponseDto;
 import pas.v2026.pasrest.dto.response.ResourceManagerResponseDto;
@@ -70,6 +67,14 @@ public class UserController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<UserResponseDto> changeStatus(@PathVariable UUID id, @RequestParam boolean active) {
         User updatedUser = userService.changeUserStatus(id, active);
+        return ResponseEntity.ok(mapToDto(updatedUser));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserResponseDto> updateUser(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateUserDto dto) {
+        User updatedUser = userService.updateUser(id, dto.getPassword());
         return ResponseEntity.ok(mapToDto(updatedUser));
     }
 

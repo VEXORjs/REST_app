@@ -59,6 +59,29 @@ public class AllocationController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping
+    public ResponseEntity<List<AllocationResponseDto>> getAllAllocations() {
+        List<ResourceAllocation> allocations = allocationService.getAllAllocations();
+
+        List<AllocationResponseDto> response = allocations.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/client/{clientId}/all")
+    public ResponseEntity<List<AllocationResponseDto>> getAllClientAllocations(@PathVariable UUID clientId) {
+        List<ResourceAllocation> allocations = allocationService.getAllAllocationsForClient(clientId);
+
+        List<AllocationResponseDto> response = allocations.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/resource/{resourceId}")
     public ResponseEntity<List<AllocationResponseDto>> getResourceAllocations(
             @PathVariable UUID resourceId,
             @RequestParam(defaultValue = "true") boolean current) {

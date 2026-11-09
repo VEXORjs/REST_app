@@ -4,10 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pas.v2026.pasrest.dto.request.CreateClusterDto;
-import pas.v2026.pasrest.dto.request.CreateDataCenterDto;
-import pas.v2026.pasrest.dto.request.CreateResourceDto;
-import pas.v2026.pasrest.dto.request.CreateServerDto;
+import pas.v2026.pasrest.dto.request.*;
 import pas.v2026.pasrest.dto.response.ClusterResponseDto;
 import pas.v2026.pasrest.dto.response.DataCenterResponseDto;
 import pas.v2026.pasrest.dto.response.ResourceResponseDto;
@@ -72,6 +69,15 @@ public class ResourceController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<ResourceResponseDto> updateResource(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateResourceDto dto) {
+        Resource updatedResource = resourceService.updateResource(id, dto);
+        return ResponseEntity.ok(mapToDto(updatedResource));
+    }
+
+
     private Resource mapToEntity(CreateResourceDto dto) {
         if (dto instanceof CreateDataCenterDto dcDto) {
             return DataCenter.builder()
@@ -107,22 +113,41 @@ public class ResourceController {
     private ResourceResponseDto mapToDto(Resource resource) {
         if (resource instanceof DataCenter dc) {
             return DataCenterResponseDto.builder()
-                    .id(dc.getId()).name(dc.getName()).description(dc.getDescription())
-                    .price(dc.getPrice()).available(dc.isAvailable()).ownerId(dc.getOwnerId())
-                    .location(dc.getLocation()).area(dc.getArea()).powerCapacity(dc.getPowerCapacity())
+                    .id(dc.getId())
+                    .name(dc.getName())
+                    .description(dc.getDescription())
+                    .price(dc.getPrice())
+                    .available(dc.isAvailable())
+                    .ownerId(dc.getOwnerId())
+                    .location(dc.getLocation())
+                    .area(dc.getArea())
+                    .powerCapacity(dc.getPowerCapacity())
                     .build();
         } else if (resource instanceof Cluster c) {
             return ClusterResponseDto.builder()
-                    .id(c.getId()).name(c.getName()).description(c.getDescription())
-                    .price(c.getPrice()).available(c.isAvailable()).ownerId(c.getOwnerId())
-                    .numberOfServers(c.getNumberOfServers()).architecture(c.getArchitecture())
+                    .id(c.getId())
+                    .name(c.getName())
+                    .description(c.getDescription())
+                    .price(c.getPrice())
+                    .available(c.isAvailable())
+                    .ownerId(c.getOwnerId())
+                    .numberOfServers(c.getNumberOfServers())
+                    .architecture(c.getArchitecture())
                     .build();
         } else if (resource instanceof Server s) {
             return ServerResponseDto.builder()
-                    .id(s.getId()).name(s.getName()).description(s.getDescription())
-                    .price(s.getPrice()).available(s.isAvailable()).ownerId(s.getOwnerId())
-                    .manufacturer(s.getManufacturer()).cpuName(s.getCpuName()).numberOfCpus(s.getNumberOfCpus())
-                    .ram(s.getRam()).storageCapacity(s.getStorageCapacity()).build();
+                    .id(s.getId())
+                    .name(s.getName())
+                    .description(s.getDescription())
+                    .price(s.getPrice())
+                    .available(s.isAvailable())
+                    .ownerId(s.getOwnerId())
+                    .manufacturer(s.getManufacturer())
+                    .cpuName(s.getCpuName())
+                    .numberOfCpus(s.getNumberOfCpus())
+                    .ram(s.getRam())
+                    .storageCapacity(s.getStorageCapacity())
+                    .build();
         }
         throw new UnknownResourceTypeException("Nieznany typ zasobu w bazie");
     }
