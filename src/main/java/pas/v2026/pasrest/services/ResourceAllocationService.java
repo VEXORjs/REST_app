@@ -29,7 +29,7 @@ public class ResourceAllocationService {
         this.resourceRepository = resourceRepository;
     }
 
-    public ResourceAllocation createAllocation(UUID clientId, UUID resourceId, Date startTime, Date endTime) {
+    public synchronized ResourceAllocation createAllocation(UUID clientId, UUID resourceId, Date startTime, Date endTime) {
 
         if (startTime == null || endTime == null) {
             throw new InvalidDateRangeException("Czas rozpoczęcia i zakończenia nie mogą być puste.");
@@ -77,7 +77,7 @@ public class ResourceAllocationService {
         return allocationRepository.save(newAllocation);
     }
 
-    public ResourceAllocation finishAllocation(UUID allocationId) {
+    public synchronized ResourceAllocation finishAllocation(UUID allocationId) {
         ResourceAllocation allocation = allocationRepository.findById(allocationId)
                 .orElseThrow(() -> new AllocationNotFoundException(allocationId));
 
@@ -91,7 +91,7 @@ public class ResourceAllocationService {
         return allocationRepository.save(allocation);
     }
 
-    public void deleteUnfinishedAllocation(UUID allocationId) {
+    public synchronized void deleteUnfinishedAllocation(UUID allocationId) {
         ResourceAllocation allocation = allocationRepository.findById(allocationId)
                 .orElseThrow(() -> new AllocationNotFoundException(allocationId));
 
@@ -118,6 +118,14 @@ public class ResourceAllocationService {
 
     public List<ResourceAllocation> getPastAllocationsForResource(UUID resourceId) {
         return allocationRepository.findPastByResourceId(resourceId, new Date());
+    }
+
+    public List<ResourceAllocation> getAllAllocations() {
+        return allocationRepository.findAll();
+    }
+
+    public List<ResourceAllocation> getAllAllocationsForClient(UUID clientId) {
+        return allocationRepository.findByClientId(clientId);
     }
 
     private boolean isTimeOverlapping(Date start1, Date end1, Date start2, Date end2) {

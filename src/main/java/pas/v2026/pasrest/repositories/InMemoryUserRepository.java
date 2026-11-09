@@ -20,7 +20,7 @@ public class InMemoryUserRepository implements UserRepository {
     public synchronized User save(User user) {
         findByLoginExact(user.getLogin())
                 .filter(existing -> !existing.getId().equals(user.getId()))
-                .ifPresent(existing -> {
+                .ifPresent(ignored -> {
                     throw new LoginAlreadyInUseException(user.getLogin());
                 });
 

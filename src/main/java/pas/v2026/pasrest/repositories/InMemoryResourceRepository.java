@@ -16,7 +16,7 @@ public class InMemoryResourceRepository implements ResourceRepository{
     private final Map<UUID, Resource> resources = new ConcurrentHashMap<>();
 
     @Override
-    public Resource save(Resource resource) {
+    public synchronized Resource save(Resource resource) {
         if (resource.getId() == null) {
             resource.setId(UUID.randomUUID());
         }
@@ -49,7 +49,7 @@ public class InMemoryResourceRepository implements ResourceRepository{
     }
 
     @Override
-    public void deleteById(UUID id) {
+    public synchronized void deleteById(UUID id) {
         resources.remove(id);
     }
 }

@@ -17,7 +17,7 @@ public class InMemoryResourceAllocationRepository implements ResourceAllocationR
     private final Map<UUID, ResourceAllocation> allocations = new ConcurrentHashMap<>();
 
     @Override
-    public ResourceAllocation save(ResourceAllocation allocation) {
+    public synchronized ResourceAllocation save(ResourceAllocation allocation) {
         if (allocation.getId() == null) {
             allocation.setId(UUID.randomUUID());
         }
@@ -64,7 +64,7 @@ public class InMemoryResourceAllocationRepository implements ResourceAllocationR
     @Override
     public List<ResourceAllocation> findCurrentByResourceId(UUID resourceId, Date now) {
         return allocations.values().stream()
-                .filter(a -> a.getClientId().equals(resourceId))
+                .filter(a -> a.getResourceId().equals(resourceId))
                 .filter(a -> a.getEndTime().after(now))
                 .collect(Collectors.toList());
     }
@@ -72,7 +72,7 @@ public class InMemoryResourceAllocationRepository implements ResourceAllocationR
     @Override
     public List<ResourceAllocation> findPastByResourceId(UUID resourceId, Date now) {
         return allocations.values().stream()
-                .filter(a -> a.getClientId().equals(resourceId))
+                .filter(a -> a.getResourceId().equals(resourceId))
                 .filter(a -> !a.getEndTime().after(now))
                 .collect(Collectors.toList());
     }
@@ -83,7 +83,7 @@ public class InMemoryResourceAllocationRepository implements ResourceAllocationR
     }
 
     @Override
-    public void deleteById(UUID id) {
+    public synchronized void deleteById(UUID id) {
         allocations.remove(id);
     }
 }

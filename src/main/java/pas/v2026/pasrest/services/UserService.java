@@ -18,7 +18,7 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User saveUser(User user) {
+    public synchronized User saveUser(User user) {
         return userRepository.save(user);
     }
 
@@ -40,10 +40,16 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException(login));
     }
 
-    public User changeUserStatus(UUID id, boolean isActive) {
+    public synchronized User changeUserStatus(UUID id, boolean isActive) {
         User user = getUser(id);
         user.setActive(isActive);
         return userRepository.save(user);
+    }
+
+    public synchronized User updateUser(UUID id, String newPassword) {
+        User user = getUser(id);
+        user.setPassword(newPassword);
+        return user;
     }
 
 
