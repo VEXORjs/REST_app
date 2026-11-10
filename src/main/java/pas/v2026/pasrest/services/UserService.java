@@ -49,7 +49,7 @@ public class UserService {
     public synchronized User updateUser(UUID id, String newPassword) {
         User user = getUser(id);
         user.setPassword(newPassword);
-        return user;
+        return userRepository.save(user);
     }
 
 
