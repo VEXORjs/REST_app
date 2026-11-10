@@ -1,4 +1,4 @@
-package pas.v2026.pasrest.dto.request;
+package pas.v2026.pasrest.dto.request.user;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

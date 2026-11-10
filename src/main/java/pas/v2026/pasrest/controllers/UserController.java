@@ -5,16 +5,10 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pas.v2026.pasrest.dto.request.*;
-import pas.v2026.pasrest.dto.response.AdminResponseDto;
-import pas.v2026.pasrest.dto.response.ClientResponseDto;
-import pas.v2026.pasrest.dto.response.ResourceManagerResponseDto;
-import pas.v2026.pasrest.dto.response.UserResponseDto;
-import pas.v2026.pasrest.exceptions.UnknownUserTypeException;
-import pas.v2026.pasrest.model.Client;
-import pas.v2026.pasrest.model.ResourceManager;
+import pas.v2026.pasrest.dto.request.user.CreateUserDto;
+import pas.v2026.pasrest.dto.request.user.UpdateUserDto;
+import pas.v2026.pasrest.dto.response.user.UserResponseDto;
 import pas.v2026.pasrest.model.User;
-import pas.v2026.pasrest.model.UserAdmin;
 import pas.v2026.pasrest.services.UserService;
 
 import java.util.List;
@@ -79,24 +73,10 @@ public class UserController {
     }
 
     private User mapToEntity(CreateUserDto dto) {
-        if (dto instanceof CreateClientDto) {
-            return Client.builder().login(dto.getLogin()).password(dto.getPassword()).build();
-        } else if (dto instanceof CreateAdminDto) {
-            return UserAdmin.builder().login(dto.getLogin()).password(dto.getPassword()).build();
-        } else if (dto instanceof CreateResourceManagerDto) {
-            return ResourceManager.builder().login(dto.getLogin()).password(dto.getPassword()).build();
-        }
-        throw new UnknownUserTypeException("Nieznany typ użytkownika w żądaniu");
+        return dto.toEntity();
     }
 
     private UserResponseDto mapToDto(User user) {
-        if (user instanceof Client) {
-            return ClientResponseDto.builder().id(user.getId()).login(user.getLogin()).active(user.isActive()).build();
-        } else if (user instanceof UserAdmin) {
-            return AdminResponseDto.builder().id(user.getId()).login(user.getLogin()).active(user.isActive()).build();
-        } else if (user instanceof ResourceManager) {
-            return ResourceManagerResponseDto.builder().id(user.getId()).login(user.getLogin()).active(user.isActive()).build();
-        }
-        throw new UnknownUserTypeException("Nieznany typ użytkownika w bazie");
+        return user.toDto();
     }
 }

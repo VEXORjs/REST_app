@@ -1,4 +1,4 @@
-package pas.v2026.pasrest.dto.response;
+package pas.v2026.pasrest.dto.response.resource;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

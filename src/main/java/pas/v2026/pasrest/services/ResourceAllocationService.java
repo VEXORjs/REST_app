@@ -31,10 +31,6 @@ public class ResourceAllocationService {
 
     public synchronized ResourceAllocation createAllocation(UUID clientId, UUID resourceId, Date startTime, Date endTime) {
 
-        if (startTime == null || endTime == null) {
-            throw new InvalidDateRangeException("Czas rozpoczęcia i zakończenia nie mogą być puste.");
-        }
-
         if (!endTime.after(startTime)) {
             throw new InvalidDateRangeException();
         }
@@ -59,11 +55,11 @@ public class ResourceAllocationService {
 
         List<ResourceAllocation> existingAllocations = allocationRepository.findByResourceId(resourceId);
 
-        boolean isOvelapping = existingAllocations.stream().anyMatch(alloc ->
+        boolean isOverlapping = existingAllocations.stream().anyMatch(alloc ->
                 isTimeOverlapping(startTime, endTime, alloc.getStartTime(), alloc.getEndTime())
         );
 
-        if (isOvelapping) {
+        if (isOverlapping) {
             throw new ResourceAlreadyAllocatedException(resourceId);
         }
 

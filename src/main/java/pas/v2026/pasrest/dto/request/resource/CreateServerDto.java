@@ -1,14 +1,17 @@
-package pas.v2026.pasrest.dto.request;
+package pas.v2026.pasrest.dto.request.resource;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import pas.v2026.pasrest.model.Resource;
+import pas.v2026.pasrest.model.Server;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class UpdateServerDto extends UpdateResourceDto{
+public class CreateServerDto extends CreateResourceDto {
+
     @NotBlank(message = "Producent jest wymagany")
     private String manufacturer;
 
@@ -26,4 +29,17 @@ public class UpdateServerDto extends UpdateResourceDto{
     @NotNull(message = "Pojemność pamięci dyskowej jest wymagana")
     @Min(value = 1, message = "Pojemność pamięci dyskowej musi być większa od zera")
     private int storageCapacity;
+
+    @Override
+    public Resource toEntity() {
+        return Server.builder()
+                .name(this.getName())
+                .description(this.getDescription())
+                .price(this.getPrice())
+                .manufacturer(this.getManufacturer())
+                .cpuName(this.getNameOfCpu())
+                .ram(this.getRam())
+                .storageCapacity(this.getStorageCapacity())
+                .build();
+    }
 }

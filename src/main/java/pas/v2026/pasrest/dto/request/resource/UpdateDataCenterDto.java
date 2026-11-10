@@ -1,4 +1,4 @@
-package pas.v2026.pasrest.dto.request;
+package pas.v2026.pasrest.dto.request.resource;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -6,11 +6,13 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import pas.v2026.pasrest.exceptions.UnknownResourceTypeException;
+import pas.v2026.pasrest.model.DataCenter;
+import pas.v2026.pasrest.model.Resource;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class CreateDataCenterDto extends CreateResourceDto {
-
+public class UpdateDataCenterDto extends UpdateResourceDto{
     @NotBlank(message = "Lokalizacja jest wymagana")
     private String location;
 
@@ -21,5 +23,15 @@ public class CreateDataCenterDto extends CreateResourceDto {
     @NotNull(message = "Moc jest wymagana")
     @Min(value = 1, message = "Moc (power capacity) musi wynosić co najmniej 1")
     private int powerCapacity;
-    
+
+    @Override
+    public void updateSpecificFields(Resource resource) {
+        if (!(resource instanceof DataCenter dc)) {
+            throw new UnknownResourceTypeException("Niezgodność typów: Oczekiwano DataCenter.");
+        }
+
+        dc.setLocation(this.location);
+        dc.setArea(this.area);
+        dc.setPowerCapacity(this.powerCapacity);
+    }
 }

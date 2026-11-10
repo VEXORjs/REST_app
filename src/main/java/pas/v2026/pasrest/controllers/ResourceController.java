@@ -4,16 +4,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pas.v2026.pasrest.dto.request.*;
-import pas.v2026.pasrest.dto.response.ClusterResponseDto;
-import pas.v2026.pasrest.dto.response.DataCenterResponseDto;
-import pas.v2026.pasrest.dto.response.ResourceResponseDto;
-import pas.v2026.pasrest.dto.response.ServerResponseDto;
-import pas.v2026.pasrest.exceptions.UnknownResourceTypeException;
-import pas.v2026.pasrest.model.Cluster;
-import pas.v2026.pasrest.model.DataCenter;
+import pas.v2026.pasrest.dto.request.resource.*;
+import pas.v2026.pasrest.dto.response.resource.ResourceResponseDto;
 import pas.v2026.pasrest.model.Resource;
-import pas.v2026.pasrest.model.Server;
 import pas.v2026.pasrest.services.ResourceService;
 
 import java.util.List;
@@ -77,78 +70,11 @@ public class ResourceController {
         return ResponseEntity.ok(mapToDto(updatedResource));
     }
 
-
     private Resource mapToEntity(CreateResourceDto dto) {
-        if (dto instanceof CreateDataCenterDto dcDto) {
-            return DataCenter.builder()
-                    .name(dcDto.getName())
-                    .description(dcDto.getDescription())
-                    .price(dcDto.getPrice())
-                    .location(dcDto.getLocation())
-                    .area(dcDto.getArea())
-                    .powerCapacity(dcDto.getPowerCapacity())
-                    .build();
-        } else if (dto instanceof CreateClusterDto clusterDto) {
-            return Cluster.builder()
-                    .name(clusterDto.getName())
-                    .description(clusterDto.getDescription())
-                    .price(clusterDto.getPrice())
-                    .numberOfServers(clusterDto.getNumberOfServers())
-                    .architecture(clusterDto.getArchitecture())
-                    .build();
-        } else if (dto instanceof CreateServerDto serverDto) {
-            return Server.builder()
-                    .name(serverDto.getName())
-                    .description(serverDto.getDescription())
-                    .price(serverDto.getPrice())
-                    .manufacturer(serverDto.getManufacturer())
-                    .cpuName(serverDto.getNameOfCpu())
-                    .ram(serverDto.getRam())
-                    .storageCapacity(serverDto.getStorageCapacity())
-                    .build();
-        }
-        throw new UnknownResourceTypeException("Nieznany typ zasobu w żądaniu");
+        return dto.toEntity();
     }
 
     private ResourceResponseDto mapToDto(Resource resource) {
-        if (resource instanceof DataCenter dc) {
-            return DataCenterResponseDto.builder()
-                    .id(dc.getId())
-                    .name(dc.getName())
-                    .description(dc.getDescription())
-                    .price(dc.getPrice())
-                    .available(dc.isAvailable())
-                    .ownerId(dc.getOwnerId())
-                    .location(dc.getLocation())
-                    .area(dc.getArea())
-                    .powerCapacity(dc.getPowerCapacity())
-                    .build();
-        } else if (resource instanceof Cluster c) {
-            return ClusterResponseDto.builder()
-                    .id(c.getId())
-                    .name(c.getName())
-                    .description(c.getDescription())
-                    .price(c.getPrice())
-                    .available(c.isAvailable())
-                    .ownerId(c.getOwnerId())
-                    .numberOfServers(c.getNumberOfServers())
-                    .architecture(c.getArchitecture())
-                    .build();
-        } else if (resource instanceof Server s) {
-            return ServerResponseDto.builder()
-                    .id(s.getId())
-                    .name(s.getName())
-                    .description(s.getDescription())
-                    .price(s.getPrice())
-                    .available(s.isAvailable())
-                    .ownerId(s.getOwnerId())
-                    .manufacturer(s.getManufacturer())
-                    .cpuName(s.getCpuName())
-                    .numberOfCpus(s.getNumberOfCpus())
-                    .ram(s.getRam())
-                    .storageCapacity(s.getStorageCapacity())
-                    .build();
-        }
-        throw new UnknownResourceTypeException("Nieznany typ zasobu w bazie");
+        return resource.toDto();
     }
 }

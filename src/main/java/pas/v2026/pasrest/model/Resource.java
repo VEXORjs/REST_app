@@ -9,6 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import pas.v2026.pasrest.dto.response.resource.ResourceResponseDto;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -33,4 +34,6 @@ public abstract class Resource {
     private boolean available = true;
 
     private UUID ownerId;
+
+    public abstract ResourceResponseDto toDto();
 }

@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import pas.v2026.pasrest.dto.response.resource.ClusterResponseDto;
+import pas.v2026.pasrest.dto.response.resource.ResourceResponseDto;
 
 @Getter
 @Setter
@@ -16,4 +18,18 @@ import lombok.experimental.SuperBuilder;
 public class Cluster extends Resource{
     private int numberOfServers;
     private String architecture;
+
+    @Override
+    public ResourceResponseDto toDto() {
+        return ClusterResponseDto.builder()
+                .id(this.getId())
+                .name(this.getName())
+                .description(this.getDescription())
+                .price(this.getPrice())
+                .available(this.isAvailable())
+                .ownerId(this.getOwnerId())
+                .numberOfServers(this.getNumberOfServers())
+                .architecture(this.getArchitecture())
+                .build();
+    }
 }

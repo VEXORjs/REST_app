@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import pas.v2026.pasrest.dto.response.user.UserResponseDto;
 
 import java.util.UUID;
 
@@ -31,4 +32,5 @@ public abstract class User {
     @Builder.Default
     private boolean active = false;
 
+    public abstract UserResponseDto toDto();
 }

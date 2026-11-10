@@ -1,17 +1,10 @@
 package pas.v2026.pasrest.services;
 
 import org.springframework.stereotype.Service;
-import pas.v2026.pasrest.dto.request.UpdateClusterDto;
-import pas.v2026.pasrest.dto.request.UpdateDataCenterDto;
-import pas.v2026.pasrest.dto.request.UpdateResourceDto;
-import pas.v2026.pasrest.dto.request.UpdateServerDto;
+import pas.v2026.pasrest.dto.request.resource.UpdateResourceDto;
 import pas.v2026.pasrest.exceptions.ResourceHasActiveAllocationsException;
 import pas.v2026.pasrest.exceptions.ResourceNotFoundException;
-import pas.v2026.pasrest.exceptions.UnknownResourceTypeException;
-import pas.v2026.pasrest.model.Cluster;
-import pas.v2026.pasrest.model.DataCenter;
 import pas.v2026.pasrest.model.Resource;
-import pas.v2026.pasrest.model.Server;
 import pas.v2026.pasrest.repositories.ResourceAllocationRepository;
 import pas.v2026.pasrest.repositories.ResourceRepository;
 
@@ -67,22 +60,7 @@ public class ResourceService {
         resource.setDescription(dto.getDescription());
         resource.setPrice(dto.getPrice());
 
-        if(resource instanceof DataCenter dc && dto instanceof UpdateDataCenterDto dcDto) {
-            dc.setLocation(dcDto.getLocation());
-            dc.setArea(dcDto.getArea());
-            dc.setPowerCapacity(dcDto.getPowerCapacity());
-        } else if (resource instanceof Cluster c && dto instanceof UpdateClusterDto cDto) {
-            c.setNumberOfServers(cDto.getNumberOfServers());
-            c.setArchitecture(cDto.getArchitecture());
-        } else if (resource instanceof Server s && dto instanceof UpdateServerDto sDto) {
-            s.setManufacturer(sDto.getManufacturer());
-            s.setCpuName(sDto.getNameOfCpu());
-            s.setNumberOfCpus(sDto.getNumberOfCpus());
-            s.setRam(sDto.getRam());
-            s.setStorageCapacity(sDto.getStorageCapacity());
-        } else {
-            throw new UnknownResourceTypeException("Przesłany typ danych nie pasuje do typu zasobu zapisanego w bazie.");
-        }
+        dto.updateSpecificFields(resource);
         return resource;
     }
 

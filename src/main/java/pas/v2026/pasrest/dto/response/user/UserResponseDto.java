@@ -1,4 +1,4 @@
-package pas.v2026.pasrest.dto.response;
+package pas.v2026.pasrest.dto.response.user;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
