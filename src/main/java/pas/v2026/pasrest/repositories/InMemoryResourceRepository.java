@@ -11,7 +11,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-@Repository
 public class InMemoryResourceRepository implements ResourceRepository{
     private final Map<UUID, Resource> resources = new ConcurrentHashMap<>();
 

@@ -13,7 +13,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-@Repository
 public class InMemoryUserRepository implements UserRepository {
     private final Map<UUID, User> users = new ConcurrentHashMap<>();
 
