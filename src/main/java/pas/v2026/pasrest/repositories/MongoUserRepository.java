@@ -43,14 +43,13 @@ public class MongoUserRepository implements UserRepository {
 
     @Override
     public synchronized User save(User user) {
+        Optional<User> existing = findByLoginExact(user.getLogin());
+
         if (user.getId() == null) {
             user.setId(UUID.randomUUID());
         }
 
-        Optional<User> existing = findByLoginExact(user.getLogin());
-
-        if (existing.isPresent() &&
-                !existing.get().getId().equals(user.getId())) {
+        if (existing.isPresent() && !existing.get().getId().equals(user.getId())) {
             throw new LoginAlreadyInUseException(user.getLogin());
         }
 
