@@ -25,7 +25,7 @@ public class ResourceIntegrationTest {
     public void shouldPerformCrudOperationsOnResource() {
         String createJson = """
                 {
-                    "type": "DATACENTER",
+                    "type": "DATA_CENTER",
                     "name": "Nowe DC Kraków",
                     "description": "DC na południu",
                     "price": 2500.0,
@@ -41,6 +41,7 @@ public class ResourceIntegrationTest {
                 .when()
                 .post("/api/resources")
                 .then()
+                .log().all()
                 .statusCode(201)
                 .body("id", notNullValue())
                 .body("name", equalTo("Nowe DC Kraków"))
@@ -50,12 +51,13 @@ public class ResourceIntegrationTest {
                 .when()
                 .get("/api/resources/" + createdId)
                 .then()
+                .log().all()
                 .statusCode(200)
                 .body("location", equalTo("Kraków"));
 
         String updateJson = """
                 {
-                    "type": "DATACENTER",
+                    "type": "DATA_CENTER",
                     "name": "Zaktualizowane DC Kraków",
                     "description": "Większe DC",
                     "price": 3000.0,
@@ -71,6 +73,7 @@ public class ResourceIntegrationTest {
                 .when()
                 .put("/api/resources/" + createdId)
                 .then()
+                .log().all()
                 .statusCode(200)
                 .body("name", equalTo("Zaktualizowane DC Kraków"))
                 .body("price", equalTo(3000.0f));

@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = CreateServerDto.class, name = "SERVER"),
         @JsonSubTypes.Type(value = CreateClusterDto.class, name = "CLUSTER"),
-        @JsonSubTypes.Type(value = CreateDataCenterDto.class, name = "DATACENTER")
+        @JsonSubTypes.Type(value = CreateDataCenterDto.class, name = "DATA_CENTER")
 })
 public abstract class CreateResourceDto {
     @NotBlank(message = "Nazwa zasobu jest wymagana")

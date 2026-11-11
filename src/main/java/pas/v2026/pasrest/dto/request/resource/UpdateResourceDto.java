@@ -13,9 +13,9 @@ import java.math.BigDecimal;
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = CreateServerDto.class, name = "SERVER"),
-        @JsonSubTypes.Type(value = CreateClusterDto.class, name = "CLUSTER"),
-        @JsonSubTypes.Type(value = CreateDataCenterDto.class, name = "DATACENTER")
+        @JsonSubTypes.Type(value = UpdateServerDto.class, name = "SERVER"),
+        @JsonSubTypes.Type(value = UpdateClusterDto.class, name = "CLUSTER"),
+        @JsonSubTypes.Type(value = UpdateDataCenterDto.class, name = "DATA_CENTER")
 })
 public abstract class UpdateResourceDto {
 
