@@ -41,7 +41,6 @@ public class ResourceIntegrationTest {
                 .when()
                 .post("/api/resources")
                 .then()
-                .log().all()
                 .statusCode(201)
                 .body("id", notNullValue())
                 .body("name", equalTo("Nowe DC Kraków"))
@@ -51,7 +50,6 @@ public class ResourceIntegrationTest {
                 .when()
                 .get("/api/resources/" + createdId)
                 .then()
-                .log().all()
                 .statusCode(200)
                 .body("location", equalTo("Kraków"));
 
@@ -73,7 +71,6 @@ public class ResourceIntegrationTest {
                 .when()
                 .put("/api/resources/" + createdId)
                 .then()
-                .log().all()
                 .statusCode(200)
                 .body("name", equalTo("Zaktualizowane DC Kraków"))
                 .body("price", equalTo(3000.0f));
