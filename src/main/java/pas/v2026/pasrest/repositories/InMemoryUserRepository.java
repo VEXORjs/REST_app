@@ -3,7 +3,6 @@ package pas.v2026.pasrest.repositories;
 
 import pas.v2026.pasrest.exceptions.LoginAlreadyInUseException;
 import pas.v2026.pasrest.model.User;
-import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;

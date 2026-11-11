@@ -1,7 +1,6 @@
 package pas.v2026.pasrest.repositories;
 
 import pas.v2026.pasrest.model.Resource;
-import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
