@@ -6,7 +6,6 @@ import pas.v2026.pasrest.model.User;
 import pas.v2026.pasrest.repositories.UserRepository;
 
 import java.util.List;
-import java.util.UUID;
 
 
 @Service
@@ -22,7 +21,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public User getUser(UUID id) {
+    public User getUser(String id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
     }
@@ -40,13 +39,13 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException(login));
     }
 
-    public synchronized User changeUserStatus(UUID id, boolean isActive) {
+    public synchronized User changeUserStatus(String id, boolean isActive) {
         User user = getUser(id);
         user.setActive(isActive);
         return userRepository.save(user);
     }
 
-    public synchronized User updateUser(UUID id, String newPassword) {
+    public synchronized User updateUser(String id, String newPassword) {
         User user = getUser(id);
         user.setPassword(newPassword);
         return userRepository.save(user);

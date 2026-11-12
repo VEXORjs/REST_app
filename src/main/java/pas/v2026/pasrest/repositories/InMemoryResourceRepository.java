@@ -11,19 +11,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class InMemoryResourceRepository implements ResourceRepository{
-    private final Map<UUID, Resource> resources = new ConcurrentHashMap<>();
+    private final Map<String, Resource> resources = new ConcurrentHashMap<>();
 
     @Override
     public synchronized Resource save(Resource resource) {
         if (resource.getId() == null) {
-            resource.setId(UUID.randomUUID());
+            resource.setId(UUID.randomUUID().toString());
         }
         resources.put(resource.getId(), resource);
         return resource;
     }
 
     @Override
-    public Optional<Resource> findById(UUID id) {
+    public Optional<Resource> findById(String id) {
         return Optional.ofNullable(resources.get(id));
     }
 
@@ -47,7 +47,7 @@ public class InMemoryResourceRepository implements ResourceRepository{
     }
 
     @Override
-    public synchronized void deleteById(UUID id) {
+    public synchronized void deleteById(String id) {
         resources.remove(id);
     }
 }

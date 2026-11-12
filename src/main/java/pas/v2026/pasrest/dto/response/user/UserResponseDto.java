@@ -7,8 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import java.util.UUID;
-
 @Data
 @SuperBuilder
 @NoArgsConstructor
@@ -20,7 +18,7 @@ import java.util.UUID;
         @JsonSubTypes.Type(value = ResourceManagerResponseDto.class, name = "RESOURCE_MANAGER")
 })
 public class UserResponseDto {
-    private UUID id;
+    private String id;
     private String login;
     private boolean active;
 }

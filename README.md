@@ -6,25 +6,25 @@ Aplikacja REST API realizująca system zarządzania i wyłącznej alokacji zasob
 
 ## Model Biznesowy i Dziedzina Polimorficzna
 
-Projekt odwzorowuje trzy kluczowe obszary dziedzinowe z unikalnymi identyfikatorami biznesowymi oraz systemowymi kluczami głównymi typu `UUID` (mapowanymi na natywne pole `_id` w dokumentach MongoDB):
+Projekt odwzorowuje trzy kluczowe obszary dziedzinowe z unikalnymi identyfikatorami biznesowymi oraz systemowymi kluczami głównymi, które w bazie są natywnymi **ObjectId**, a w aplikacji są obsługiwane jako typ `String`:
 
 ### 1. Hierarchia Użytkowników (`User`)
 Obsługuje 3 poziomy uprawnień biznesowych oraz flagę aktywności konta (`active`):
-* **`UserAdmin`** – poziom administratora użytkowników systemowych.
-* **`ResourceManager`** – poziom zarządcy zasobów infrastruktury.
-* **`Client`** – poziom użytkownika końcowego uprawnionego do alokacji zasobów.
-* **Wymagane atrybuty:** `_id` (UUID), `login` (wymagany, unikalny w całej hierarchii), `password`, `active` (boolean), `type` (`CLIENT` | `ADMIN` | `MANAGER`).
+- **`UserAdmin`** – poziom administratora użytkowników systemowych.
+- **`ResourceManager`** – poziom zarządcy zasobów infrastruktury.
+- **`Client`** – poziom użytkownika końcowego uprawnionego do alokacji zasobów.
+- **Wymagane atrybuty:** `_id` (String - natywne ObjectId), `login` (wymagany, unikalny w całej hierarchii), `password`, `active` (boolean), `type` (`CLIENT` | `ADMIN` | `MANAGER`).
 
 ### 2. Hierarchia Zasobów (`Resource`)
 Polimorficzny model zasobów infrastruktury IT:
-* **`Server`** – parametry: `manufacturer`, `cpuName`, `numberOfCpus`, `ram`, `storageCapacity`.
-* **`DataCenter`** – parametry: `location`, `area`, `powerCapacity`.
-* **`Cluster`** – parametry: `numberOfServers`, `architecture`.
-* **Wymagane atrybuty:** `_id` (UUID), `type` (`SERVER` | `DATA_CENTER` | `CLUSTER`), `price` (precyzyjny typ `Decimal128`), `available` (boolean).
+- **`Server`** – parametry: `manufacturer`, `cpuName`, `numberOfCpus`, `ram`, `storageCapacity`.
+- **`DataCenter`** – parametry: `location`, `area`, `powerCapacity`.
+- **`Cluster`** – parametry: `numberOfServers`, `architecture`.
+- **Wymagane atrybuty:** `_id` (String - natywne ObjectId), `type` (`SERVER` | `DATA_CENTER` | `CLUSTER`), `price` (precyzyjny typ `Decimal128`), `available` (boolean).
 
 ### 3. Klasa Alokacji Zasobów (`ResourceAllocation`)
 Reprezentuje wyłączny dwustronny związek czasowy pomiędzy Klientem a Zasobem:
-* **Wymagane atrybuty:** `_id` (UUID), `clientId` (UUID), `resourceId` (UUID), `startTime` (Date/Instant), opcjonalne `endTime` (Date/Instant).
+- **Wymagane atrybuty:** `_id` (String - natywne ObjectId), `clientId` (String), `resourceId` (String), `startTime` (Date/Instant), opcjonalne `endTime` (Date/Instant).
 
 ---
 
@@ -72,7 +72,7 @@ src/main/java/pas/v2026/pasrest/
 
 ## Ograniczenia i Walidacje Bazy Danych (JSON Schema)
 
-Dla każdej kolekcji podczas uruchamiania aplikacji nakładany jest natywny walidator bazy danych `$jsonSchema`:
+Dla kolekcji podczas uruchamiania aplikacji nakładane są natywne walidatory bazy danych `$jsonSchema`:
 
 ```java
 // Kolekcja Użytkowników
@@ -81,6 +81,26 @@ Document usersSchema = Document.parse("""
       "$jsonSchema": {
         "bsonType": "object",
         "required": ["_id", "login", "password", "type", "active"]
+      }
+    }
+""");
+
+// Kolekcja Zasobów
+Document resourcesSchema = Document.parse("""
+    {
+      "$jsonSchema": {
+        "bsonType": "object",
+        "required": ["_id", "type", "name", "price", "available"]
+      }
+    }
+""");
+
+// Kolekcja Alokacji
+Document allocationsSchema = Document.parse("""
+    {
+      "$jsonSchema": {
+        "bsonType": "object",
+        "required": ["_id", "clientId", "resourceId", "startTime"]
       }
     }
 """);
@@ -104,31 +124,31 @@ database.getCollection("users").createIndex(
 ## REST API – Endpointy i Kody Statusów HTTP
 
 ### 1. Użytkownicy (`/api/users`)
-* `GET /api/users` – Pobranie listy wszystkich użytkowników (`200 OK`)
-* `GET /api/users/{id}` – Pobranie użytkownika po UUID (`200 OK` / `404 Not Found`)
-* `GET /api/users/login/exact?login={login}` – Ścisłe wyszukiwanie po loginie (`200 OK` / `404 Not Found`)
-* `GET /api/users/login/match?part={text}` – Wyszukiwanie częściowe po loginie (`200 OK`)
-* `POST /api/users` – Rejestracja nowego użytkownika (`201 Created` / `400 Bad Request` / `409 Conflict`)
-* `PUT /api/users/{id}` – Modyfikacja danych użytkownika (`200 OK` / `409 Conflict`)
-* `POST /api/users/{id}/activate` – Aktywacja konta (`200 OK`)
-* `POST /api/users/{id}/deactivate` – Deaktywacja konta (`200 OK`)
+- `GET /api/users` – Pobranie listy wszystkich użytkowników (`200 OK`)
+- `GET /api/users/{id}` – Pobranie użytkownika po ID (`200 OK` / `404 Not Found`)
+- `GET /api/users/login/exact?login={login}` – Ścisłe wyszukiwanie po loginie (`200 OK` / `404 Not Found`)
+- `GET /api/users/login/match?part={text}` – Wyszukiwanie częściowe po loginie (`200 OK`)
+- `POST /api/users` – Rejestracja nowego użytkownika (`201 Created` / `400 Bad Request` / `409 Conflict`)
+- `PUT /api/users/{id}` – Modyfikacja danych użytkownika (`200 OK` / `409 Conflict`)
+- `POST /api/users/{id}/activate` – Aktywacja konta (`200 OK`)
+- `POST /api/users/{id}/deactivate` – Deaktywacja konta (`200 OK`)
 
 ### 2. Zasoby (`/api/resources`)
-* `GET /api/resources` – Lista wszystkich zasobów (`200 OK`)
-* `GET /api/resources/{id}` – Pobranie zasobu po UUID (`200 OK` / `404 Not Found`)
-* `POST /api/resources` – Utworzenie nowego zasobu (`201 Created` / `400 Bad Request`)
-* `PUT /api/resources/{id}` – Modyfikacja zasobu (`200 OK`)
-* `DELETE /api/resources/{id}` – Usunięcie zasobu (dozwolone tylko gdy brak alokacji: `204 No Content` / `409 Conflict` / `404 Not Found`)
+- `GET /api/resources` – Lista wszystkich zasobów (`200 OK`)
+- `GET /api/resources/{id}` – Pobranie zasobu po ID (`200 OK` / `404 Not Found`)
+- `POST /api/resources` – Utworzenie nowego zasobu (`201 Created` / `400 Bad Request`)
+- `PUT /api/resources/{id}` – Modyfikacja zasobu (`200 OK`)
+- `DELETE /api/resources/{id}` – Usunięcie zasobu (dozwolone tylko, gdy zasób nie posiada żadnych alokacji, ani historycznych, ani bieżących: `204 No Content` / `409 Conflict` / `404 Not Found`)
 
 ### 3. Alokacje (`/api/allocations`)
-* `GET /api/allocations` – Pobranie wszystkich alokacji (`200 OK`)
-* `GET /api/allocations/client/{clientId}/current` – Bieżące alokacje wskazanego klienta (`200 OK`)
-* `GET /api/allocations/client/{clientId}/past` – Zakończone alokacje klienta (`200 OK`)
-* `GET /api/allocations/resource/{resourceId}/current` – Bieżące alokacje danego zasobu (`200 OK`)
-* `GET /api/allocations/resource/{resourceId}/past` – Minione alokacje zasobu (`200 OK`)
-* `POST /api/allocations` – Tworzenie nowej alokacji (`201 Created` / `400 Bad Request` / `409 Conflict` w przypadku braku aktywności klienta lub kolizji terminów)
-* `POST /api/allocations/{id}/end` – Ustawienie czasu zakończenia alokacji (`200 OK` / `400 Bad Request`)
-* `DELETE /api/allocations/{id}` – Usunięcie niezakończonej alokacji (`204 No Content` / `400 Bad Request`)
+- `GET /api/allocations` – Pobranie wszystkich alokacji (`200 OK`)
+- `GET /api/allocations/client/{clientId}/current` – Bieżące alokacje wskazanego klienta (`200 OK`)
+- `GET /api/allocations/client/{clientId}/past` – Zakończone alokacje klienta (`200 OK`)
+- `GET /api/allocations/resource/{resourceId}/current` – Bieżące alokacje danego zasobu (`200 OK`)
+- `GET /api/allocations/resource/{resourceId}/past` – Minione alokacje zasobu (`200 OK`)
+- `POST /api/allocations` – Tworzenie nowej alokacji (`201 Created` / `400 Bad Request` / `409 Conflict` w przypadku braku aktywności klienta lub kolizji terminów)
+- `POST /api/allocations/{id}/end` – Ustawienie czasu zakończenia alokacji (`200 OK` / `400 Bad Request`)
+- `DELETE /api/allocations/{id}` – Usunięcie niezakończonej alokacji (`204 No Content` / `400 Bad Request`)
 
 ---
 
@@ -145,23 +165,23 @@ src/test/java/pas/v2026/pasrest/
 ```
 
 ### Pokryte Scenariusze Testowe:
-* **Testy Pozytywne:**
-  * Pełny cykl CRU na użytkownikach oraz CRUD na zasobach.
-  * Pomyślne utworzenie alokacji zasobu dla aktywnego Klienta i zweryfikowanie jej na liście bieżących alokacji.
-* **Testy Negatywne:**
-  * Odrzucenie żądania z błędami składniowymi (`400 Bad Request` – np. brak wymaganych pól DTO / naruszenie Not-Null).
-  * Próba utworzenia użytkownika z istniejącym już w bazie loginem (`409 Conflict`).
-  * Próba nakładającej się alokacji zasobu, który jest już zaalokowany przez innego klienta (`409 Conflict`).
-  * Próba usunięcia zasobu powiązanego z historią alokacji (`409 Conflict`).
+- **Testy Pozytywne:**
+  - Pełny cykl CRU na użytkownikach oraz CRUD na zasobach.
+  - Pomyślne utworzenie alokacji zasobu dla aktywnego Klienta i zweryfikowanie jej na liście bieżących alokacji.
+- **Testy Negatywne:**
+  - Odrzucenie żądania z błędami składniowymi (`400 Bad Request` – np. brak wymaganych pól DTO / naruszenie Not-Null).
+  - Próba utworzenia użytkownika z istniejącym już w bazie loginem (`409 Conflict`).
+  - Próba nakładającej się alokacji zasobu, który jest już zaalokowany przez innego klienta (`409 Conflict`).
+  - Próba usunięcia zasobu powiązanego z historią alokacji (`409 Conflict`).
 
 ---
 
 ## Uruchomienie Projektu Lokalnie
 
 ### 1. Wymagania wstępne
-* **JDK 21+** (rekomendowane JDK 25 / 26)
-* **Docker Desktop**
-* **Apache Maven**
+- **JDK 21+** (rekomendowane JDK 25 / 26)
+- **Docker Desktop**
+- **Apache Maven**
 
 ### 2. Uruchomienie bazy MongoDB w kontenerze
 ```bash

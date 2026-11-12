@@ -12,7 +12,6 @@ import pas.v2026.pasrest.model.User;
 import pas.v2026.pasrest.services.UserService;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -32,7 +31,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDto> getUser(@PathVariable UUID id) {
+    public ResponseEntity<UserResponseDto> getUser(@PathVariable String id) {
         User user = userService.getUser(id);
         return ResponseEntity.ok(mapToDto(user));
     }
@@ -59,14 +58,14 @@ public class UserController {
     }
 
     @PatchMapping("/{id}/status")
-    public ResponseEntity<UserResponseDto> changeStatus(@PathVariable UUID id, @RequestParam boolean active) {
+    public ResponseEntity<UserResponseDto> changeStatus(@PathVariable String id, @RequestParam boolean active) {
         User updatedUser = userService.changeUserStatus(id, active);
         return ResponseEntity.ok(mapToDto(updatedUser));
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<UserResponseDto> updateUser(
-            @PathVariable UUID id,
+            @PathVariable String id,
             @Valid @RequestBody UpdateUserDto dto) {
         User updatedUser = userService.updateUser(id, dto.getPassword());
         return ResponseEntity.ok(mapToDto(updatedUser));

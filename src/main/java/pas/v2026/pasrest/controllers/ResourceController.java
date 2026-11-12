@@ -10,7 +10,6 @@ import pas.v2026.pasrest.model.Resource;
 import pas.v2026.pasrest.services.ResourceService;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -30,7 +29,7 @@ public class ResourceController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResourceResponseDto> getResource(@PathVariable UUID id) {
+    public ResponseEntity<ResourceResponseDto> getResource(@PathVariable String id) {
         Resource resource = resourceService.getResource(id);
         return ResponseEntity.ok(mapToDto(resource));
     }
@@ -57,14 +56,14 @@ public class ResourceController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteResource(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteResource(@PathVariable String id) {
         resourceService.deleteResource(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ResourceResponseDto> updateResource(
-            @PathVariable UUID id,
+            @PathVariable String id,
             @Valid @RequestBody UpdateResourceDto dto) {
         Resource updatedResource = resourceService.updateResource(id, dto);
         return ResponseEntity.ok(mapToDto(updatedResource));

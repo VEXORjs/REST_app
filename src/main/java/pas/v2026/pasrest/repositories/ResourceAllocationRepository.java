@@ -5,17 +5,17 @@ import pas.v2026.pasrest.model.ResourceAllocation;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public interface ResourceAllocationRepository {
     ResourceAllocation save(ResourceAllocation allocation);
-    Optional<ResourceAllocation> findById(UUID id);
-    List<ResourceAllocation> findByClientId(UUID clientId);
-    List<ResourceAllocation> findByResourceId(UUID resourceId);
-    List<ResourceAllocation> findCurrentByClientId(UUID clientId, Date now);
-    List<ResourceAllocation> findPastByClientId(UUID clientId, Date now);
-    List<ResourceAllocation> findCurrentByResourceId(UUID resourceId, Date now);
-    List<ResourceAllocation> findPastByResourceId(UUID resourceId, Date now);
+    Optional<ResourceAllocation> findById(String id);
+    List<ResourceAllocation> findByClientId(String clientId);
+    List<ResourceAllocation> findByResourceId(String resourceId);
+    List<ResourceAllocation> findCurrentByClientId(String clientId, Date now);
+    List<ResourceAllocation> findPastByClientId(String clientId, Date now);
+    List<ResourceAllocation> findCurrentByResourceId(String resourceId, Date now);
+    List<ResourceAllocation> findPastByResourceId(String resourceId, Date now);
     List<ResourceAllocation> findAll();
-    void deleteById(UUID id);
+    void deleteById(String id);
+    boolean hasOverlappingAllocations(String resourceId, Date startTime, Date endTime);
 }

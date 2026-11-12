@@ -9,6 +9,9 @@ import lombok.experimental.SuperBuilder;
 import pas.v2026.pasrest.dto.response.resource.DataCenterResponseDto;
 import pas.v2026.pasrest.dto.response.resource.ResourceResponseDto;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
@@ -33,5 +36,19 @@ public class DataCenter extends Resource{
                 .area(this.getArea())
                 .powerCapacity(this.getPowerCapacity())
                 .build();
+    }
+
+    @Override
+    public Map<String, Object> getSpecificAttributes() {
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("location", getLocation());
+        attributes.put("area", getArea());
+        attributes.put("powerCapacity", getPowerCapacity());
+        return attributes;
+    }
+
+    @Override
+    public String getResourceType() {
+        return "DATACENTER";
     }
 }

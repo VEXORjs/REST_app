@@ -5,135 +5,51 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
 import org.bson.Document;
-import org.bson.types.Decimal128;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Repository;
 import pas.v2026.pasrest.model.*;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.regex.Pattern;
 
 @Repository
 public class MongoResourceRepository implements ResourceRepository {
-
     private final MongoCollection<Document> collection;
+    private final ObjectMapper objectMapper;
 
-    public MongoResourceRepository(MongoDatabase database) {
+    public MongoResourceRepository(MongoDatabase database, ObjectMapper objectMapper) {
         this.collection = database.getCollection("resources");
+        this.objectMapper = objectMapper;
     }
 
     @Override
     public Resource save(Resource resource) {
-        if (resource.getId() == null) {
-            resource.setId(UUID.randomUUID());
+        Map<String, Object> resourceMap = objectMapper.convertValue(resource, new TypeReference<Map<String, Object>>() {});
+        Document document = new Document(resourceMap);
+
+        if(resource.getId() == null) {
+            collection.insertOne(document);
+            resource.setId(document.getObjectId("_id").toHexString());
+        } else {
+            collection.replaceOne(
+                    Filters.eq("_id", new ObjectId(resource.getId())),
+                    document,
+                    new ReplaceOptions().upsert(true)
+            );
         }
-
-        Document document = new Document()
-                .append("_id", resource.getId().toString())
-                .append("type", getResourceType(resource))
-                .append("name", resource.getName())
-                .append("description", resource.getDescription())
-                .append("price", resource.getPrice())
-                .append("available", resource.isAvailable())
-                .append("ownerId", resource.getOwnerId() == null
-                        ? null : resource.getOwnerId().toString());
-
-        switch (resource) {
-            case Server server -> document.append("manufacturer", server.getManufacturer())
-                    .append("cpuName", server.getCpuName())
-                    .append("numberOfCpus", server.getNumberOfCpus())
-                    .append("ram", server.getRam())
-                    .append("storageCapacity", server.getStorageCapacity());
-            case DataCenter dc -> document.append("location", dc.getLocation())
-                    .append("area", dc.getArea())
-                    .append("powerCapacity", dc.getPowerCapacity());
-            case Cluster cluster -> document.append("numberOfServers", cluster.getNumberOfServers())
-                    .append("architecture", cluster.getArchitecture());
-            default -> {
-            }
-        }
-
-        collection.replaceOne(
-                Filters.eq("_id", resource.getId().toString()),
-                document,
-                new ReplaceOptions().upsert(true)
-        );
-
         return resource;
     }
 
-    private String getResourceType(Resource resource) {
-        if (resource instanceof Server) return "SERVER";
-        if (resource instanceof DataCenter) return "DATA_CENTER";
-        if (resource instanceof Cluster) return "CLUSTER";
-
-        throw new IllegalArgumentException("Nieznany typ zasobu");
-    }
-
     private Resource fromDocument(Document d) {
-        String type = d.getString("type");
-
-        Resource.ResourceBuilder<?, ?> builder;
-
-        switch (type) {
-            case "SERVER" -> {
-                return Server.builder()
-                        .id(UUID.fromString(d.getString("_id")))
-                        .name(d.getString("name"))
-                        .description(d.getString("description"))
-                        .price(d.get("price", Decimal128.class) != null
-                                ? d.get("price", Decimal128.class).bigDecimalValue()
-                                : null)
-                        .available(d.getBoolean("available", true))
-                        .ownerId(parseUUID(d.getString("ownerId")))
-                        .manufacturer(d.getString("manufacturer"))
-                        .cpuName(d.getString("cpuName"))
-                        .numberOfCpus(d.getInteger("numberOfCpus", 1))
-                        .ram(d.getInteger("ram"))
-                        .storageCapacity(d.getInteger("storageCapacity"))
-                        .build();
-            }
-            case "DATA_CENTER" -> {
-                return DataCenter.builder()
-                        .id(UUID.fromString(d.getString("_id")))
-                        .name(d.getString("name"))
-                        .description(d.getString("description"))
-                        .price(d.get("price", Decimal128.class) != null
-                                ? d.get("price", Decimal128.class).bigDecimalValue()
-                                : null)
-                        .available(d.getBoolean("available", true))
-                        .ownerId(parseUUID(d.getString("ownerId")))
-                        .location(d.getString("location"))
-                        .area(d.getDouble("area"))
-                        .powerCapacity(d.getInteger("powerCapacity"))
-                        .build();
-            }
-            case "CLUSTER" -> {
-                return Cluster.builder()
-                        .id(UUID.fromString(d.getString("_id")))
-                        .name(d.getString("name"))
-                        .description(d.getString("description"))
-                        .price(d.get("price", Decimal128.class) != null
-                                ? d.get("price", Decimal128.class).bigDecimalValue()
-                                : null)
-                        .available(d.getBoolean("available", true))
-                        .ownerId(parseUUID(d.getString("ownerId")))
-                        .numberOfServers(d.getInteger("numberOfServers"))
-                        .architecture(d.getString("architecture"))
-                        .build();
-            }
-            default -> throw new IllegalArgumentException("Nieznany typ zasobu: " + type);
-        }
-    }
-
-    private UUID parseUUID(String value) {
-        return value == null ? null : UUID.fromString(value);
+        d.put("id", d.getObjectId("_id").toHexString());
+        return objectMapper.convertValue(d, Resource.class);
     }
 
     @Override
-    public Optional<Resource> findById(UUID id) {
-        Document d = collection.find(Filters.eq("_id", id.toString())).first();
+    public Optional<Resource> findById(String id) {
+        Document d = collection.find(Filters.eq("_id", new ObjectId(id))).first();
         return Optional.ofNullable(d).map(this::fromDocument);
     }
 
@@ -150,22 +66,24 @@ public class MongoResourceRepository implements ResourceRepository {
 
     @Override
     public List<Resource> findByNamePartial(String namePart) {
-        return findAll().stream()
-                .filter(r -> r.getName() != null &&
-                        r.getName().toLowerCase()
-                                .contains(namePart.toLowerCase()))
-                .toList();
+        List<Resource> result = new ArrayList<>();
+        for (Document d : collection.find(Filters.regex("name", Pattern.quote(namePart), "i"))) {
+            result.add(fromDocument(d));
+        }
+        return result;
     }
 
     @Override
     public List<Resource> findByAvailable(boolean available) {
-        return findAll().stream()
-                .filter(r -> r.isAvailable() == available)
-                .toList();
+        List<Resource> result = new ArrayList<>();
+        for (Document d : collection.find(Filters.eq("available", "i"))) {
+            result.add(fromDocument(d));
+        }
+        return result;
     }
 
     @Override
-    public void deleteById(UUID id) {
-        collection.deleteOne(Filters.eq("_id", id.toString()));
+    public void deleteById(String id) {
+        collection.deleteOne(Filters.eq("_id", new ObjectId(id)));
     }
 }

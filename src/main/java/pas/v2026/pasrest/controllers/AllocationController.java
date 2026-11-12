@@ -10,7 +10,6 @@ import pas.v2026.pasrest.model.ResourceAllocation;
 import pas.v2026.pasrest.services.ResourceAllocationService;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -34,20 +33,20 @@ public class AllocationController {
     }
 
     @PatchMapping("/{id}/finish")
-    public ResponseEntity<AllocationResponseDto> finishAllocation(@PathVariable UUID id) {
+    public ResponseEntity<AllocationResponseDto> finishAllocation(@PathVariable String id) {
         ResourceAllocation allocation = allocationService.finishAllocation(id);
         return ResponseEntity.ok(mapToDto(allocation));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAllocation(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteAllocation(@PathVariable String id) {
         allocationService.deleteUnfinishedAllocation(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/client/{clientId}")
     public ResponseEntity<List<AllocationResponseDto>> getClientAllocations(
-            @PathVariable UUID clientId,
+            @PathVariable String clientId,
             @RequestParam(defaultValue = "true") boolean current) {
         List<ResourceAllocation> allocations = current
         ? allocationService.getCurrentAllocationsForClient(clientId)
@@ -71,7 +70,7 @@ public class AllocationController {
     }
 
     @GetMapping("/client/{clientId}/all")
-    public ResponseEntity<List<AllocationResponseDto>> getAllClientAllocations(@PathVariable UUID clientId) {
+    public ResponseEntity<List<AllocationResponseDto>> getAllClientAllocations(@PathVariable String clientId) {
         List<ResourceAllocation> allocations = allocationService.getAllAllocationsForClient(clientId);
 
         List<AllocationResponseDto> response = allocations.stream()
@@ -83,7 +82,7 @@ public class AllocationController {
 
     @GetMapping("/resource/{resourceId}")
     public ResponseEntity<List<AllocationResponseDto>> getResourceAllocations(
-            @PathVariable UUID resourceId,
+            @PathVariable String resourceId,
             @RequestParam(defaultValue = "true") boolean current) {
         List<ResourceAllocation> allocations = current
                 ? allocationService.getCurrentAllocationsForResource(resourceId)

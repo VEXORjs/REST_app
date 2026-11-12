@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -19,13 +18,13 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ResourceAllocation {
     @EqualsAndHashCode.Include
-    private UUID id;
+    private String id;
 
     @NotNull(message = "ID Klienta jest wymagane")
-    private UUID clientId;
+    private String clientId;
 
     @NotNull(message = "ID zasobu jest wymagane")
-    private UUID resourceId;
+    private String resourceId;
 
     @NotNull(message = "Czas rozpoczęcia jest wymagany")
     private Date startTime;

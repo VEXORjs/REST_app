@@ -12,7 +12,7 @@ import pas.v2026.pasrest.repositories.UserRepository;
 
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
 
 @Service
 public class ResourceAllocationService {
@@ -29,7 +29,7 @@ public class ResourceAllocationService {
         this.resourceRepository = resourceRepository;
     }
 
-    public synchronized ResourceAllocation createAllocation(UUID clientId, UUID resourceId, Date startTime, Date endTime) {
+    public synchronized ResourceAllocation createAllocation(String clientId, String resourceId, Date startTime, Date endTime) {
 
         if (!endTime.after(startTime)) {
             throw new InvalidDateRangeException();
@@ -53,11 +53,8 @@ public class ResourceAllocationService {
             throw new ResourceUnavailableException();
         }
 
-        List<ResourceAllocation> existingAllocations = allocationRepository.findByResourceId(resourceId);
+        boolean isOverlapping = allocationRepository.hasOverlappingAllocations(resourceId, startTime, endTime);
 
-        boolean isOverlapping = existingAllocations.stream().anyMatch(alloc ->
-                isTimeOverlapping(startTime, endTime, alloc.getStartTime(), alloc.getEndTime())
-        );
 
         if (isOverlapping) {
             throw new ResourceAlreadyAllocatedException(resourceId);
@@ -70,10 +67,12 @@ public class ResourceAllocationService {
                 .endTime(endTime)
                 .build();
 
-        return allocationRepository.save(newAllocation);
+        ResourceAllocation savedAllocation = allocationRepository.save(newAllocation);
+        updateResourceState(resource.getId());
+        return savedAllocation;
     }
 
-    public synchronized ResourceAllocation finishAllocation(UUID allocationId) {
+    public synchronized ResourceAllocation finishAllocation(String allocationId) {
         ResourceAllocation allocation = allocationRepository.findById(allocationId)
                 .orElseThrow(() -> new AllocationNotFoundException(allocationId));
 
@@ -83,11 +82,17 @@ public class ResourceAllocationService {
             throw new AllocationAlreadyFinishedException();
         }
 
+        if (allocation.getStartTime().after(now)) {
+            throw new InvalidDateRangeException("Nie można zakończyć alokacji, która się jeszcze nie rozpoczęła. Zamiast tego anuluj ją (usuń)");
+        }
+
         allocation.setEndTime(now);
-        return allocationRepository.save(allocation);
+        ResourceAllocation savedAllocation = allocationRepository.save(allocation);
+        updateResourceState(allocation.getResourceId());
+        return savedAllocation;
     }
 
-    public synchronized void deleteUnfinishedAllocation(UUID allocationId) {
+    public synchronized void deleteUnfinishedAllocation(String allocationId) {
         ResourceAllocation allocation = allocationRepository.findById(allocationId)
                 .orElseThrow(() -> new AllocationNotFoundException(allocationId));
 
@@ -98,21 +103,22 @@ public class ResourceAllocationService {
         }
 
         allocationRepository.deleteById(allocationId);
+        updateResourceState(allocation.getResourceId());
     }
 
-    public List<ResourceAllocation> getCurrentAllocationsForClient(UUID clientId) {
+    public List<ResourceAllocation> getCurrentAllocationsForClient(String clientId) {
         return allocationRepository.findCurrentByClientId(clientId, new Date());
     }
 
-    public List<ResourceAllocation> getPastAllocationsForClient(UUID clientId) {
+    public List<ResourceAllocation> getPastAllocationsForClient(String clientId) {
         return allocationRepository.findPastByClientId(clientId, new Date());
     }
 
-    public List<ResourceAllocation> getCurrentAllocationsForResource(UUID resourceId) {
+    public List<ResourceAllocation> getCurrentAllocationsForResource(String resourceId) {
         return allocationRepository.findCurrentByResourceId(resourceId, new Date());
     }
 
-    public List<ResourceAllocation> getPastAllocationsForResource(UUID resourceId) {
+    public List<ResourceAllocation> getPastAllocationsForResource(String resourceId) {
         return allocationRepository.findPastByResourceId(resourceId, new Date());
     }
 
@@ -120,12 +126,29 @@ public class ResourceAllocationService {
         return allocationRepository.findAll();
     }
 
-    public List<ResourceAllocation> getAllAllocationsForClient(UUID clientId) {
+    public List<ResourceAllocation> getAllAllocationsForClient(String clientId) {
         return allocationRepository.findByClientId(clientId);
     }
 
-    private boolean isTimeOverlapping(Date start1, Date end1, Date start2, Date end2) {
-        return start1.before(end2) && start2.before(end1);
+    private void updateResourceState(String resourceId) {
+        Resource resource = resourceRepository.findById(resourceId).orElse(null);
+        if (resource == null) return;
+
+        Date now = new Date();
+
+        Optional<ResourceAllocation> currentOrFutureAllocation = allocationRepository.findByResourceId(resourceId).stream()
+                .filter(a -> a.getEndTime().after(now))
+                .findFirst();
+
+        if (currentOrFutureAllocation.isPresent()) {
+            resource.setAvailable(false);
+            resource.setOwnerId(currentOrFutureAllocation.get().getClientId());
+        } else {
+            resource.setAvailable(true);
+            resource.setOwnerId(null);
+        }
+
+        resourceRepository.save(resource);
     }
 
 }

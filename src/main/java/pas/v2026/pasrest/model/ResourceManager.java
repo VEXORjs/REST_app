@@ -18,4 +18,8 @@ public class ResourceManager extends User {
                 .active(this.isActive()).build();
 
     }
+    @Override
+    public String getUserRole() {
+        return "MANAGER";
+    }
 }

@@ -9,6 +9,9 @@ import lombok.experimental.SuperBuilder;
 import pas.v2026.pasrest.dto.response.resource.ClusterResponseDto;
 import pas.v2026.pasrest.dto.response.resource.ResourceResponseDto;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
@@ -31,5 +34,18 @@ public class Cluster extends Resource{
                 .numberOfServers(this.getNumberOfServers())
                 .architecture(this.getArchitecture())
                 .build();
+    }
+
+    @Override
+    public Map<String, Object> getSpecificAttributes() {
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("numberOfServers", getNumberOfServers());
+        attributes.put("architecture", getArchitecture());
+        return attributes;
+    }
+
+    @Override
+    public String getResourceType() {
+        return "CLUSTER";
     }
 }

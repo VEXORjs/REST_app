@@ -12,38 +12,38 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class InMemoryResourceAllocationRepository implements ResourceAllocationRepository {
-    private final Map<UUID, ResourceAllocation> allocations = new ConcurrentHashMap<>();
+    private final Map<String, ResourceAllocation> allocations = new ConcurrentHashMap<>();
 
     @Override
     public synchronized ResourceAllocation save(ResourceAllocation allocation) {
         if (allocation.getId() == null) {
-            allocation.setId(UUID.randomUUID());
+            allocation.setId(UUID.randomUUID().toString());
         }
         allocations.put(allocation.getId(), allocation);
         return allocation;
     }
 
     @Override
-    public Optional<ResourceAllocation> findById(UUID id) {
+    public Optional<ResourceAllocation> findById(String id) {
         return Optional.ofNullable(allocations.get(id));
     }
 
     @Override
-    public List<ResourceAllocation> findByClientId(UUID clientId) {
+    public List<ResourceAllocation> findByClientId(String clientId) {
         return allocations.values().stream()
                 .filter(a -> a.getClientId().equals(clientId))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ResourceAllocation> findByResourceId(UUID resourceId) {
+    public List<ResourceAllocation> findByResourceId(String resourceId) {
         return allocations.values().stream()
                 .filter(a -> a.getResourceId().equals(resourceId))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ResourceAllocation> findCurrentByClientId(UUID clientId, Date now) {
+    public List<ResourceAllocation> findCurrentByClientId(String clientId, Date now) {
         return allocations.values().stream()
                 .filter(a -> a.getClientId().equals(clientId))
                 .filter(a -> a.getEndTime().after(now))
@@ -52,7 +52,7 @@ public class InMemoryResourceAllocationRepository implements ResourceAllocationR
 
 
     @Override
-    public List<ResourceAllocation> findPastByClientId(UUID clientId, Date now) {
+    public List<ResourceAllocation> findPastByClientId(String clientId, Date now) {
         return allocations.values().stream()
                 .filter(a -> a.getClientId().equals(clientId))
                 .filter(a -> !a.getEndTime().after(now))
@@ -60,7 +60,7 @@ public class InMemoryResourceAllocationRepository implements ResourceAllocationR
     }
 
     @Override
-    public List<ResourceAllocation> findCurrentByResourceId(UUID resourceId, Date now) {
+    public List<ResourceAllocation> findCurrentByResourceId(String resourceId, Date now) {
         return allocations.values().stream()
                 .filter(a -> a.getResourceId().equals(resourceId))
                 .filter(a -> a.getEndTime().after(now))
@@ -68,7 +68,7 @@ public class InMemoryResourceAllocationRepository implements ResourceAllocationR
     }
 
     @Override
-    public List<ResourceAllocation> findPastByResourceId(UUID resourceId, Date now) {
+    public List<ResourceAllocation> findPastByResourceId(String resourceId, Date now) {
         return allocations.values().stream()
                 .filter(a -> a.getResourceId().equals(resourceId))
                 .filter(a -> !a.getEndTime().after(now))
@@ -81,7 +81,14 @@ public class InMemoryResourceAllocationRepository implements ResourceAllocationR
     }
 
     @Override
-    public synchronized void deleteById(UUID id) {
+    public synchronized void deleteById(String id) {
         allocations.remove(id);
+    }
+
+    @Override
+    public boolean hasOverlappingAllocations(String resourceId, Date startTime, Date endTime) {
+        return allocations.values().stream()
+                .filter(a -> a.getResourceId().equals(resourceId))
+                .anyMatch(a -> a.getStartTime().before(endTime) && a.getEndTime().after(startTime));
     }
 }

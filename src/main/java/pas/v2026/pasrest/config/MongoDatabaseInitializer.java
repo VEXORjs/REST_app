@@ -94,6 +94,8 @@ public class MongoDatabaseInitializer implements CommandLineRunner {
                 .cpuName("Intel Xeon")
                 .ram(64)
                 .storageCapacity(2000)
+                .available(false)
+                .ownerId(client1.getId())
                 .build();
 
         DataCenter dataCenter = DataCenter.builder()

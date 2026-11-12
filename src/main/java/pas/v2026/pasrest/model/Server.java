@@ -9,6 +9,9 @@ import lombok.experimental.SuperBuilder;
 import pas.v2026.pasrest.dto.response.resource.ResourceResponseDto;
 import pas.v2026.pasrest.dto.response.resource.ServerResponseDto;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
@@ -37,5 +40,21 @@ public class Server extends Resource{
                 .ram(this.getRam())
                 .storageCapacity(this.getStorageCapacity())
                 .build();
+    }
+
+    @Override
+    public Map<String, Object> getSpecificAttributes() {
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("manufacturer", getManufacturer());
+        attributes.put("cpuName", getCpuName());
+        attributes.put("numberOfCpus", getNumberOfCpus());
+        attributes.put("ram", getRam());
+        attributes.put("storageCapacity", getStorageCapacity());
+        return attributes;
+    }
+
+    @Override
+    public String getResourceType() {
+        return "SERVER";
     }
 }

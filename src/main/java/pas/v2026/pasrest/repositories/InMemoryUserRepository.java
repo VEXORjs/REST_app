@@ -13,12 +13,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class InMemoryUserRepository implements UserRepository {
-    private final Map<UUID, User> users = new ConcurrentHashMap<>();
+    private final Map<String, User> users = new ConcurrentHashMap<>();
 
     @Override
     public synchronized User save(User user) {
         if(user.getId() == null) {
-            user.setId(UUID.randomUUID());
+            user.setId(UUID.randomUUID().toString());
         }
 
         Optional<User> existingUser = findByLoginExact(user.getLogin());
@@ -31,7 +31,7 @@ public class InMemoryUserRepository implements UserRepository {
     }
 
     @Override
-    public Optional<User> findById(UUID id) {
+    public Optional<User> findById(String id) {
         return Optional.ofNullable(users.get(id));
     }
 

@@ -6,16 +6,15 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.Date;
-import java.util.UUID;
 
 @Data
 public class CreateAllocationDto {
 
     @NotNull(message = "ID klienta jest wymagane")
-    private UUID clientId;
+    private String clientId;
 
     @NotNull(message = "ID zasobu jest wymagane")
-    private UUID resourceId;
+    private String resourceId;
 
     @NotNull(message = "Czas rozpoczęcia jest wymagany")
     @FutureOrPresent(message = "Czas rozpoczęcia nie może być w przeszłości")

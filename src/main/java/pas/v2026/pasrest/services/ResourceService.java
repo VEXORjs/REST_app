@@ -9,8 +9,8 @@ import pas.v2026.pasrest.repositories.ResourceAllocationRepository;
 import pas.v2026.pasrest.repositories.ResourceRepository;
 
 
+import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class ResourceService {
@@ -28,7 +28,7 @@ public class ResourceService {
         return resourceRepository.save(resource);
     }
 
-    public Resource getResource(UUID id) {
+    public Resource getResource(String id) {
         return resourceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(id));
     }
@@ -45,23 +45,23 @@ public class ResourceService {
         return resourceRepository.findByAvailable(available);
     }
 
-    public synchronized void deleteResource(UUID id) {
+    public synchronized void deleteResource(String id) {
         getResource(id);
-        boolean hasAllocations = !allocationRepository.findByResourceId(id).isEmpty();
+        boolean hasAllocations = !allocationRepository.findCurrentByResourceId(id, new Date()).isEmpty();
         if (hasAllocations) {
             throw new ResourceHasActiveAllocationsException(id);
         }
         resourceRepository.deleteById(id);
     }
 
-    public synchronized Resource updateResource(UUID id, UpdateResourceDto dto) {
+    public synchronized Resource updateResource(String id, UpdateResourceDto dto) {
         Resource resource = getResource(id);
         resource.setName(dto.getName());
         resource.setDescription(dto.getDescription());
         resource.setPrice(dto.getPrice());
 
         dto.updateSpecificFields(resource);
-        return resource;
+        return resourceRepository.save(resource);
     }
 
 }

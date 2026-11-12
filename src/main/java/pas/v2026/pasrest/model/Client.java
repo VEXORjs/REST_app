@@ -19,4 +19,9 @@ public class Client extends User{
                 .active(this.isActive())
                 .build();
     }
+
+    @Override
+    public String getUserRole() {
+        return "CLIENT";
+    }
 }

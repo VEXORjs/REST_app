@@ -6,72 +6,56 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Repository;
 import pas.v2026.pasrest.exceptions.LoginAlreadyInUseException;
-import pas.v2026.pasrest.exceptions.UnknownUserTypeException;
-import pas.v2026.pasrest.model.Client;
-import pas.v2026.pasrest.model.ResourceManager;
 import pas.v2026.pasrest.model.User;
-import pas.v2026.pasrest.model.UserAdmin;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 public class MongoUserRepository implements UserRepository {
 
     private final MongoCollection<Document> users;
+    private final ObjectMapper objectMapper;
 
-    public MongoUserRepository(MongoDatabase database) {
+    public MongoUserRepository(MongoDatabase database, ObjectMapper objectMapper) {
         this.users = database.getCollection("users");
-    }
-
-    private String getUserType(User user) {
-        if (user instanceof Client) {
-            return "CLIENT";
-        }
-        if (user instanceof UserAdmin) {
-            return "ADMIN";
-        }
-        if (user instanceof ResourceManager) {
-            return "MANAGER";
-        }
-
-        throw new IllegalArgumentException("Nieznany typ użytkownika");
+        this.objectMapper = objectMapper;
     }
 
     @Override
     public synchronized User save(User user) {
         Optional<User> existing = findByLoginExact(user.getLogin());
 
-        if (user.getId() == null) {
-            user.setId(UUID.randomUUID());
-        }
-
         if (existing.isPresent() && !existing.get().getId().equals(user.getId())) {
             throw new LoginAlreadyInUseException(user.getLogin());
         }
 
-        Document document = new Document("_id", user.getId().toString())
-                .append("login", user.getLogin())
-                .append("password", user.getPassword())
-                .append("active", user.isActive())
-                .append("type", getUserType(user));
+        Map<String, Object> userMap = objectMapper.convertValue(user, new TypeReference<Map<String, Object>>() {});
+        Document document = new Document(userMap);
 
-        users.replaceOne(
-                Filters.eq("_id", user.getId().toString()),
-                document,
-                new ReplaceOptions().upsert(true)
-        );
-
+        if (user.getId() == null) {
+            users.insertOne(document);
+            user.setId(document.getObjectId("_id").toHexString());
+        } else {
+            users.replaceOne(
+                    Filters.eq("_id", new ObjectId(user.getId())),
+                    document,
+                    new ReplaceOptions().upsert(true)
+            );
+        }
         return user;
     }
 
     @Override
-    public Optional<User> findById(UUID id) {
+    public Optional<User> findById(String id) {
         Document document = users.find(
-                Filters.eq("_id", id.toString())
+                Filters.eq("_id", new ObjectId(id))
         ).first();
 
         return Optional.ofNullable(document).map(this::toUser);
@@ -108,38 +92,7 @@ public class MongoUserRepository implements UserRepository {
     }
 
     private User toUser(Document document) {
-        String type = document.getString("type");
-
-        UUID id = UUID.fromString(document.getString("_id"));
-        String login = document.getString("login");
-        String password = document.getString("password");
-        boolean active = document.getBoolean("active", false);
-
-        return switch (type) {
-            case "CLIENT" -> Client.builder()
-                    .id(id)
-                    .login(login)
-                    .password(password)
-                    .active(active)
-                    .build();
-
-            case "ADMIN" -> UserAdmin.builder()
-                    .id(id)
-                    .login(login)
-                    .password(password)
-                    .active(active)
-                    .build();
-
-            case "MANAGER" -> ResourceManager.builder()
-                    .id(id)
-                    .login(login)
-                    .password(password)
-                    .active(active)
-                    .build();
-
-            default -> throw new UnknownUserTypeException(
-                    "Nieznany typ użytkownika: " + type
-            );
-        };
+        document.put("id", document.getObjectId("_id").toHexString());
+        return objectMapper.convertValue(document, User.class);
     }
 }

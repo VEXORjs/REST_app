@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 @Data
 @SuperBuilder
@@ -21,10 +20,10 @@ import java.util.UUID;
         @JsonSubTypes.Type(value = DataCenterResponseDto.class, name = "DATACENTER")
 })
 public abstract class ResourceResponseDto {
-    private UUID id;
+    private String id;
     private String name;
     private String description;
     private BigDecimal price;
     private boolean available = true;
-    private UUID ownerId;
+    private String ownerId;
 }

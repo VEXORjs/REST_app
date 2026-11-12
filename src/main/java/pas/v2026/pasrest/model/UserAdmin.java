@@ -20,4 +20,9 @@ public class UserAdmin extends User{
                 .build();
 
     }
+
+    @Override
+    public String getUserRole() {
+        return "ADMIN";
+    }
 }

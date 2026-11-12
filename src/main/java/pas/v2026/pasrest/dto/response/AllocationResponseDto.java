@@ -4,14 +4,13 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.Date;
-import java.util.UUID;
 
 @Data
 @Builder
 public class AllocationResponseDto {
-    private UUID id;
-    private UUID clientId;
-    private UUID resourceId;
+    private String id;
+    private String clientId;
+    private String resourceId;
     private Date startTime;
     private Date endTime;
 }
