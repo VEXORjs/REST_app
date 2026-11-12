@@ -25,7 +25,7 @@ public class ResourceIntegrationTest {
     public void shouldPerformCrudOperationsOnResource() {
         String createJson = """
                 {
-                    "type": "DATACENTER",
+                    "type": "DATA_CENTER",
                     "name": "Nowe DC Kraków",
                     "description": "DC na południu",
                     "price": 2500.0,
@@ -55,7 +55,7 @@ public class ResourceIntegrationTest {
 
         String updateJson = """
                 {
-                    "type": "DATACENTER",
+                    "type": "DATA_CENTER",
                     "name": "Zaktualizowane DC Kraków",
                     "description": "Większe DC",
                     "price": 3000.0,
