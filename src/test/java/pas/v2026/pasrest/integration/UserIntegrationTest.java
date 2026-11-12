@@ -1,7 +1,9 @@
 package pas.v2026.pasrest.integration;
 
 import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
+import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,17 +20,25 @@ public class UserIntegrationTest {
     @LocalServerPort
     private int port;
 
+    private RequestSpecification requestSpec;
+
     @BeforeEach
     public void setUp() {
         RestAssured.port = port;
+        requestSpec = new RequestSpecBuilder()
+                .setContentType(ContentType.JSON)
+                .setAccept(ContentType.JSON)
+                .build();
     }
 
     @Test
     public void shouldReturnAllUsers() {
         given()
+                .spec(requestSpec)
                 .when()
                 .get("/api/users")
                 .then()
+                .log().all()
                 .statusCode(200)
                 .body("size()", greaterThan(0))
                 .body("[0].login", notNullValue());
@@ -41,11 +51,12 @@ public class UserIntegrationTest {
         newClient.setPassword("TrudneHaslo123");
 
         given()
-                .contentType(ContentType.JSON)
+                .spec(requestSpec)
                 .body(newClient)
                 .when()
                 .post("/api/users")
                 .then()
+                .log().all()
                 .statusCode(201)
                 .body("login", equalTo("nowy_testowy_klient"))
                 .body("active", equalTo(false));
@@ -63,6 +74,7 @@ public class UserIntegrationTest {
                 .when()
                 .post("/api/users")
                 .then()
+                .log().all()
                 .statusCode(201)
                 .extract().path("id");
 
@@ -70,17 +82,20 @@ public class UserIntegrationTest {
         updateDto.setPassword("NoweTrudneHaslo123");
 
         given()
-                .contentType(ContentType.JSON)
+                .spec(requestSpec)
                 .body(updateDto)
                 .when()
-                .put("/api/users/" + userId)
+                .patch("/api/users/" + userId)
                 .then()
+                .log().all()
                 .statusCode(200);
 
         given()
+                .spec(requestSpec)
                 .when()
                 .patch("/api/users/" + userId + "/status?active=true")
                 .then()
+                .log().all()
                 .statusCode(200)
                 .body("active", equalTo(true));
     }
@@ -95,11 +110,12 @@ public class UserIntegrationTest {
 
 
         given()
-                .contentType(ContentType.JSON)
+                .spec(requestSpec)
                 .body(firstClient)
                 .when()
                 .post("/api/users")
                 .then()
+                .log().all()
                 .statusCode(201);
 
         CreateClientDto duplicatedClient = new CreateClientDto();
@@ -108,11 +124,12 @@ public class UserIntegrationTest {
 
 
         given()
-                .contentType(ContentType.JSON)
+                .spec(requestSpec)
                 .body(duplicatedClient)
                 .when()
                 .post("/api/users")
                 .then()
+                .log().all()
                 .statusCode(409)
                 .body("error", containsString("już istnieje"));
     }
@@ -124,11 +141,12 @@ public class UserIntegrationTest {
         invalidClient.setPassword("123");
 
         given()
-                .contentType(ContentType.JSON)
+                .spec(requestSpec)
                 .body(invalidClient)
                 .when()
                 .post("/api/users")
                 .then()
+                .log().all()
                 .statusCode(400)
                 .body("password", containsString("minimum 6 znaków"));
     }

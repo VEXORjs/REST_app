@@ -106,7 +106,10 @@ public class MongoResourceAllocationRepository implements ResourceAllocationRepo
             String field, String id, Date now) {
 
         return findWithDateFilter(field, id,
-                Filters.gt("endTime", now));
+                Filters.and(
+                        Filters.lte("startTime", now),
+                        Filters.gt("endTime", now)
+                ));
     }
 
     private List<ResourceAllocation> findPast(

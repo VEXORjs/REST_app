@@ -1,7 +1,9 @@
 package pas.v2026.pasrest.integration;
 
 import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
+import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,9 +18,15 @@ public class ResourceIntegrationTest {
     @LocalServerPort
     private int port;
 
+    private RequestSpecification requestSpec;
+
     @BeforeEach
     public void setUp() {
         RestAssured.port = port;
+        requestSpec = new RequestSpecBuilder()
+                .setContentType(ContentType.JSON)
+                .setAccept(ContentType.JSON)
+                .build();
     }
 
     @Test
@@ -36,20 +44,23 @@ public class ResourceIntegrationTest {
                 """;
 
         String createdId = given()
-                .contentType(ContentType.JSON)
+                .spec(requestSpec)
                 .body(createJson)
                 .when()
                 .post("/api/resources")
                 .then()
+                .log().all()
                 .statusCode(201)
                 .body("id", notNullValue())
                 .body("name", equalTo("Nowe DC Kraków"))
                 .extract().path("id");
 
         given()
+                .spec(requestSpec)
                 .when()
                 .get("/api/resources/" + createdId)
                 .then()
+                .log().all()
                 .statusCode(200)
                 .body("location", equalTo("Kraków"));
 
@@ -66,25 +77,30 @@ public class ResourceIntegrationTest {
                 """;
 
         given()
-                .contentType(ContentType.JSON)
+                .spec(requestSpec)
                 .body(updateJson)
                 .when()
                 .put("/api/resources/" + createdId)
                 .then()
+                .log().all()
                 .statusCode(200)
                 .body("name", equalTo("Zaktualizowane DC Kraków"))
                 .body("price", equalTo(3000.0f));
 
         given()
+                .spec(requestSpec)
                 .when()
                 .delete("/api/resources/" + createdId)
                 .then()
+                .log().all()
                 .statusCode(204);
 
         given()
+                .spec(requestSpec)
                 .when()
                 .get("/api/resources/" + createdId)
                 .then()
+                .log().all()
                 .statusCode(404);
     }
 
@@ -105,11 +121,12 @@ public class ResourceIntegrationTest {
                 """;
 
         given()
-                .contentType(ContentType.JSON)
+                .spec(requestSpec)
                 .body(invalidResourceJson)
                 .when()
                 .post("/api/resources")
                 .then()
+                .log().all()
                 .statusCode(400)
                 .body("name", notNullValue())
                 .body("price", notNullValue());

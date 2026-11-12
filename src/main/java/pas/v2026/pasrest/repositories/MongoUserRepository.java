@@ -92,7 +92,11 @@ public class MongoUserRepository implements UserRepository {
     }
 
     private User toUser(Document document) {
-        document.put("id", document.getObjectId("_id").toHexString());
+        String id = document.getObjectId("_id").toHexString();
+
+        document.remove("_id");
+        document.put("id", id);
+
         return objectMapper.convertValue(document, User.class);
     }
 }

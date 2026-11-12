@@ -41,5 +41,7 @@ public abstract class User {
     private boolean active = false;
 
     public abstract UserResponseDto toDto();
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     public abstract String getUserRole();
 }

@@ -46,6 +46,8 @@ public abstract class Resource {
     private String ownerId;
 
     public abstract ResourceResponseDto toDto();
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     public abstract Map<String, Object> getSpecificAttributes();
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     public abstract String getResourceType();
 }

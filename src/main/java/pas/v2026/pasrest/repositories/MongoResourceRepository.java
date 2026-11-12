@@ -8,8 +8,8 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Repository;
 import pas.v2026.pasrest.model.*;
-import tools.jackson.core.type.TypeReference;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -43,7 +43,10 @@ public class MongoResourceRepository implements ResourceRepository {
     }
 
     private Resource fromDocument(Document d) {
-        d.put("id", d.getObjectId("_id").toHexString());
+        String id = d.getObjectId("_id").toHexString();
+
+        d.remove("_id");
+        d.put("id", id);
         return objectMapper.convertValue(d, Resource.class);
     }
 
@@ -76,7 +79,7 @@ public class MongoResourceRepository implements ResourceRepository {
     @Override
     public List<Resource> findByAvailable(boolean available) {
         List<Resource> result = new ArrayList<>();
-        for (Document d : collection.find(Filters.eq("available", "i"))) {
+        for (Document d : collection.find(Filters.eq("available", available))) {
             result.add(fromDocument(d));
         }
         return result;

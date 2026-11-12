@@ -49,15 +49,14 @@ public class ResourceAllocationService {
         Resource resource = resourceRepository.findById(resourceId)
                 .orElseThrow(() -> new ResourceNotFoundException(resourceId));
 
-        if (!resource.isAvailable()) {
-            throw new ResourceUnavailableException();
-        }
-
         boolean isOverlapping = allocationRepository.hasOverlappingAllocations(resourceId, startTime, endTime);
-
 
         if (isOverlapping) {
             throw new ResourceAlreadyAllocatedException(resourceId);
+        }
+
+        if (!resource.isAvailable()) {
+            throw new ResourceUnavailableException();
         }
 
         ResourceAllocation newAllocation = ResourceAllocation.builder()
